@@ -30,6 +30,8 @@ def create_backend(project_name):
         "dev": 'concurrently "npm run server" "npm run client"'
     }
 
+    package_json['type'] = "module"
+
     with open("package.json", "w") as package_file:
         json.dump(package_json, package_file, indent=2)
 
@@ -97,60 +99,29 @@ export const errorHandler = (err, req, res, next) => {
     with open("backend/middleware/errorMiddleware.js", "w") as middleware_file:
         middleware_file.write(error_middleware_content)
 
-    print(f"Backend setup complete for project: {project_name}")
+    # Create db.js
+    db_config = """\
+import mongoose from 'mongoose';
+import colors from 'colors';
 
-def create_react_app():
-    """Function to set up the frontend React app inside the project folder."""
-
-    # Step 1: Create frontend directory
-    frontend_dir = "frontend"
-    os.makedirs(frontend_dir, exist_ok=True)
-    os.chdir(frontend_dir)
-
-    # Step 2: Create Vite React app
-    print(f"Creating Vite React app in {frontend_dir}...")
-    run_command(f"npm create vite@latest . -- --template react")
-
-    # Step 3: Install required packages
-    print("Installing dependencies...")
-    run_command("npm install react-icons react-redux @reduxjs/toolkit tailwindcss postcss autoprefixer react-router-dom react-spinners react-toastify axios")
-    run_command("npm install --save-dev jest @testing-library/react @testing-library/jest-dom redux-mock-store redux-thunk axios-mock-adapter babel-jest @babel/preset-env @babel/preset-react jest-fetch-mock")
-
-    # Step 4: Initialize Tailwind CSS
-    run_command("npx tailwindcss init -p")
-
-    # Add the rest of your frontend modifications here (like Tailwind config, Vite config, etc.)
-    # All the code blocks you've written (App.jsx, store.js, main.jsx, index.html) can be included here.
-
-    # Example of modifying a file (as you did in your other script):
-    # Modify the tailwind.config.js file
-    tailwind_config_content = """\
-/** @type {import('tailwindcss').Config} */
-export default {
-  content: [
-    "./index.html",
-    "./src/**/*.{js,ts,jsx,tsx}",
-  ],
-  theme: {
-    extend: {
-      colors: {
-        // Custom colors can go here
-      },
-      fontFamily: {
-        roboto: ['Roboto', 'sans-serif'],
-        ropa: ['Ropa Sans', 'sans-serif'],
-      },
-    },
-  },
-  plugins: [],
+export const connectDB = async () => {
+    try {
+        const conn = await mongoose.connect(process.env.MONGO_URI);
+        console.log(`MongoDB Connected: ${conn.connection.host}`.cyan.underline);
+    } catch (error) {
+        console.log(error);
+        console.log("Add Mongo URI to .env!".red);
+        console.log("(Add JWT secret too)".red);
+        process.exit(1);
+    }
 }
 """
-    with open("tailwind.config.js", "w") as tailwind_file:
-        tailwind_file.write(tailwind_config_content)
-    print("Updated tailwind.config.js")
+    with open("backend/config/db.js", "w") as db_file:
+        db_file.write(db_config)
 
-    # (Continue adding all other steps to set up your React app)
-    print("Frontend React app setup complete.")
+    print(f"Backend setup complete for project: {project_name}")
+
+from mern_frontend_builder import MernFrontendBuilder
 
 if __name__ == "__main__":
     project_name = input("Enter your project name: ")
@@ -159,6 +130,11 @@ if __name__ == "__main__":
     create_backend(project_name)
 
     # Step 2: Create frontend in the same project folder
-    create_react_app()
+    frontendBuilder = MernFrontendBuilder()
+    frontendBuilder.create_react_app()
+
+    print("Starting the development server...")
+    os.chdir('..')
+    subprocess.Popen("npm run dev", shell=True)
 
     print(f"Project {project_name} setup complete with backend and frontend!")
