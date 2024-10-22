@@ -16,7 +16,7 @@ def create_backend(project_name):
 
     # Install backend dependencies
     run_command("npm init -y")
-    run_command("npm i express dotenv mongoose colors cors express-async-handler bcryptjs jsonwebtoken")
+    run_command("npm i express dotenv mongoose colors cors express-async-handler bcryptjs jsonwebtoken cookie-parser")
     run_command("npm i --save-dev concurrently nodemon")
 
     # Modify the package.json file for scripts
