@@ -41,11 +41,11 @@ def create_backend(project_name):
 
     # Create a .env file
     with open(".env", "w") as env_file:
-        env_file.write("""\
+        env_file.write(f"""\
 NODE_ENV=development
 BACKEND_PORT=5000
-MONGO_URI=
-JWT_SECRET=
+MONGO_URI=mongodb://localhost:27017/{project_name}
+JWT_SECRET=jwtSecret123
 """)
 
     # Create backend folder structure
@@ -58,6 +58,7 @@ JWT_SECRET=
     # Create server.js file
     server_js_content = """\
 import express from 'express';
+import cookieParser from 'cookie-parser';
 import { errorHandler } from './middleware/errorMiddleware.js';
 import { connectDB } from './config/db.js';
 import cors from 'cors';
@@ -70,9 +71,13 @@ connectDB();
 const app = express();
 
 if (process.env.NODE_ENV === 'development') {
-    app.use(cors());
+    app.use(cors({
+        origin: 'http://localhost:3000',
+        credentials: true
+    }));
 }
 
+app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
