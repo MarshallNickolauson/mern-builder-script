@@ -103,11 +103,15 @@ export default defineConfig({
     # Step 9: Create store.js
     store_js_content = """\
 import { configureStore } from '@reduxjs/toolkit';
+import { apiSlice } from './slices/apiSlice.js';
 
 const store = configureStore({
     reducer: {
-
+        [apiSlice.reducerPath]: apiSlice.reducer,
+        
     },
+    middleware: (getDefaultMiddleware) => getDefaultMiddleware().concat(apiSlice.middleware),
+    devTools: true,
 });
 
 export default store;
@@ -131,15 +135,15 @@ import {
 // import 'bootstrap/dist/css/bootstrap.min.css';
 import './index.css'
 import MainLayout from './layouts/MainLayout';
-import NotFoundPage from './pages/NotFoundPage';
-import HomePage from './pages/HomePage';
+import NotFoundScreen from './screens/NotFoundScreen';
+import HomeScreen from './screens/HomeScreen';
 
 function App() {
     const router = createBrowserRouter(
         createRoutesFromElements(
             <Route path='/' element={<MainLayout />}>
-                <Route path='*' element={<NotFoundPage />} />
-                <Route index element={<HomePage />} />
+                <Route path='*' element={<NotFoundScreen />} />
+                <Route index element={<HomeScreen />} />
             </Route>
         )
     );
@@ -186,28 +190,28 @@ createRoot(document.getElementById('root')).render(
         readme_file.write(readme_content)
     print("Updated README.md to contain '# Project name'")
 
-    # Step 13: Create pages directory and HomePage.jsx and NotFoundPage.jsx
-    os.makedirs("src/pages", exist_ok=True)
+    # Step 13: Create screens directory and HomeScreen.jsx and NotFoundScreen.jsx
+    os.makedirs("src/screens", exist_ok=True)
 
-    home_page_content = """\
-const HomePage = () => {
+    home_screen_content = """\
+const HomeScreen = () => {
   return (
     <>
-      HomePage
+      HomeScreen
     </>
   )
 }
 
-export default HomePage
+export default HomeScreen
 """
-    with open("src/pages/HomePage.jsx", "w") as home_file:
-        home_file.write(home_page_content)
-    print("Created src/pages/HomePage.jsx")
+    with open("src/screens/HomeScreen.jsx", "w") as home_file:
+        home_file.write(home_screen_content)
+    print("Created src/screens/HomeScreen.jsx")
 
-    not_found_page_content = """\
+    not_found_screen_content = """\
 import { Link } from 'react-router-dom'
 
-const NotFoundPage = () => {
+const NotFoundScreen = () => {
     return (
         <section className='text-center flex flex-col justify-center items-center h-96'>
             <h1 className='text-6xl font-bold mb-4'>404 Not Found</h1>
@@ -222,17 +226,43 @@ const NotFoundPage = () => {
     )
 }
 
-export default NotFoundPage
+export default NotFoundScreen
 """
-    with open("src/pages/NotFoundPage.jsx", "w") as not_found_file:
-        not_found_file.write(not_found_page_content)
-    print("Created src/pages/NotFoundPage.jsx")
+    with open("src/screens/NotFoundScreen.jsx", "w") as not_found_file:
+        not_found_file.write(not_found_screen_content)
+    print("Created src/screens/NotFoundScreen.jsx")
 
     # Step 14: Create layouts directory and MainLayout.jsx
     os.makedirs("src/layouts", exist_ok=True)
 
-    # Step 14b: Create features folder for redux
-    os.makedirs("src/features", exist_ok=True)
+    # Step 14b: Create slices folder for redux
+    os.makedirs("src/slices", exist_ok=True)
+    
+    # Step 14c: Create apiSlice.js
+    api_slice_js_content = """\
+import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
+import { BASE_URL } from "../constants.js";
+
+const baseQuery = fetchBaseQuery({ baseUrl: BASE_URL });
+
+export const apiSlice = createApi({
+  baseQuery,
+  tagTypes: ['User'],
+  endpoints: (builder) => ({}),
+});
+"""
+    with open("src/slices/apiSlice.js", "w") as store_file:
+        store_file.write(api_slice_js_content)
+    print("Created src/slices/api_slice_js_content.js")
+    
+    # Step 14d: Create constants.js
+    constants_js_content = """\
+export const BASE_URL = process.env.NODE_ENV === 'development' ? 'http://localhost:5000' : '';
+export const USERS_URL = '/api/users';
+"""
+    with open("src/constants.js", "w") as store_file:
+        store_file.write(constants_js_content)
+    print("Created src/constants_js_content.js")
 
     main_layout_content = """\
 import React from 'react'
@@ -319,3 +349,6 @@ export default Footer;
 
     print("React app setup complete!")
     webbrowser.open("http://localhost:3000/")
+    
+builder = MernFrontendBuilder()
+builder.create_react_app()
