@@ -25,7 +25,7 @@ class MernFrontendBuilder():
 
     # Step 3: Install required packages
     print("Installing dependencies...")
-    run_command("npm install react-icons react-redux @reduxjs/toolkit tailwindcss postcss autoprefixer react-router-dom react-spinners react-toastify axios")
+    run_command("npm install react-icons react-redux @reduxjs/toolkit tailwindcss postcss autoprefixer react-router-dom react-spinners react-toastify axios bootstrap react-bootstrap react-router-bootstrap")
     run_command("npm install --save-dev jest @testing-library/react @testing-library/jest-dom redux-mock-store redux-thunk axios-mock-adapter babel-jest @babel/preset-env @babel/preset-react jest-fetch-mock")
 
     # Step 4: Initialize Tailwind CSS
@@ -81,37 +81,14 @@ export default defineConfig({
         vite_config_file.write(vite_config_content)
     print("Updated vite.config.js")
 
-    # Step 7: Remove app.css and update App.jsx
+    # Step 7: Remove app.css and App.jsx
     if os.path.exists("src/App.css"):
         os.remove("src/App.css")
         print("Removed src/App.css")
 
-    # Rewrite App.jsx
-    app_jsx_content = """\
-import { Route, createBrowserRouter, createRoutesFromElements, RouterProvider } from 'react-router-dom'
-import MainLayout from './layouts/MainLayout'
-import NotFoundPage from './pages/NotFoundPage';
-import HomePage from './pages/HomePage';
-
-function App() {
-
-  const router = createBrowserRouter(
-    createRoutesFromElements(
-      <Route path='/' element={<MainLayout />} >
-        <Route index element={<HomePage />} />
-        <Route path='*' element={<NotFoundPage />} />
-      </Route>
-    )
-  );
-
-  return <RouterProvider router={router} />;
-}
-
-export default App
-"""
-    with open("src/App.jsx", "w") as app_file:
-        app_file.write(app_jsx_content)
-    print("Rewritten src/App.jsx")
+    if os.path.exists("src/App.jsx"):
+        os.remove("src/App.jsx")
+        print("Removed src/App.jsx")
 
     # Step 8: Rewrite index.css
     index_css_content = """\
@@ -141,12 +118,34 @@ export default store;
 
     # Step 10: Rewrite main.jsx
     main_jsx_content = """\
-import { createRoot } from 'react-dom/client'
-import { Provider } from 'react-redux'
-import { StrictMode } from 'react'
-import store from './store.js'
-import App from './App.jsx'
+import { createRoot } from 'react-dom/client';
+import { Provider } from 'react-redux';
+import { StrictMode } from 'react';
+import store from './store.js';
+import {
+    Route,
+    createBrowserRouter,
+    createRoutesFromElements,
+    RouterProvider,
+} from 'react-router-dom';
+// import 'bootstrap/dist/css/bootstrap.min.css';
 import './index.css'
+import MainLayout from './layouts/MainLayout';
+import NotFoundPage from './pages/NotFoundPage';
+import HomePage from './pages/HomePage';
+
+function App() {
+    const router = createBrowserRouter(
+        createRoutesFromElements(
+            <Route path='/' element={<MainLayout />}>
+                <Route path='*' element={<NotFoundPage />} />
+                <Route index element={<HomePage />} />
+            </Route>
+        )
+    );
+
+    return <RouterProvider router={router} />;
+}
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
@@ -154,7 +153,7 @@ createRoot(document.getElementById('root')).render(
       <App />
     </Provider>
   </StrictMode>
-)
+);
 """
     with open("src/main.jsx", "w") as main_file:
         main_file.write(main_jsx_content)
