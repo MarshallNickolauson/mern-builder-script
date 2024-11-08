@@ -266,14 +266,14 @@ export const USERS_URL = '/api/users';
 
     main_layout_content = """\
 import React from 'react'
-import Navbar from '../components/Navbar'
+import Header from '../components/Header'
 import { Outlet } from 'react-router-dom';
 import Footer from '../components/Footer';
 
 const MainLayout = () => {
   return (
     <>
-      <Navbar />
+      <Header />
       <Outlet />
       <Footer />
     </>
@@ -285,23 +285,23 @@ export default MainLayout;
         main_layout_file.write(main_layout_content)
     print("Created src/layouts/MainLayout.jsx")
 
-    # Step 15: Create components directory and Navbar and Footer components
+    # Step 15: Create components directory and Header and Footer components
     os.makedirs("src/components", exist_ok=True)
 
-    navbar_content = """\
-function Navbar() {
+    header_content = """\
+function Header() {
   return (
     <nav>
-      navbar
+      header
     </nav>
   );
 }
 
-export default Navbar;
+export default Header;
 """
-    with open("src/components/Navbar.jsx", "w") as navbar_file:
-        navbar_file.write(navbar_content)
-    print("Created src/components/Navbar.jsx")
+    with open("src/components/Header.jsx", "w") as header_file:
+        header_file.write(header_content)
+    print("Created src/components/Header.jsx")
 
     footer_content = """\
 function Footer() {
