@@ -349,6 +349,3 @@ export default Footer;
 
     print("React app setup complete!")
     webbrowser.open("http://localhost:3000/")
-    
-builder = MernFrontendBuilder()
-builder.create_react_app()
