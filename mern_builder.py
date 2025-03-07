@@ -1,7 +1,5 @@
 import os
 import subprocess
-import webbrowser
-import time
 import json
 
 def run_command(command):
@@ -13,50 +11,63 @@ def create_backend(project_name):
     """Function to set up the backend."""
     os.makedirs(project_name, exist_ok=True)
     os.chdir(project_name)
-
-    # Install backend dependencies
+    
+    # Initialize root package.json for concurrently
+    run_command("npm init -y")
+    run_command("npm i --save-dev concurrently")
+    
+    with open("package.json", "r") as main_package_file:
+        main_package_json = json.load(main_package_file)
+    
+    main_package_json['scripts'] = {
+        "server": "npm run server --prefix backend",
+        "client": "npm run dev --prefix frontend",
+        "dev": "concurrently \"npm run server\" \"npm run client\""
+    }
+    
+    with open("package.json", "w") as main_package_file:
+        json.dump(main_package_json, main_package_file, indent=2)
+    
+    # Setup backend
+    os.makedirs("backend", exist_ok=True)
+    os.chdir("backend")
+    
     run_command("npm init -y")
     run_command("npm i express dotenv mongoose colors cors express-async-handler bcryptjs jsonwebtoken cookie-parser")
-    run_command("npm i --save-dev concurrently nodemon")
-
-    # Modify the package.json file for scripts
-    with open("package.json", "r") as package_file:
-        package_json = json.load(package_file)
-
-    package_json['scripts'] = {
-        "start": "node backend/server.js",
-        "server": "nodemon backend/server.js",
-        "client": "npm run dev --prefix frontend",
-        "dev": 'concurrently "npm run server" "npm run client"'
+    run_command("npm i --save-dev nodemon")
+    
+    with open("package.json", "r") as backend_package_file:
+        backend_package_json = json.load(backend_package_file)
+    
+    backend_package_json['scripts'] = {
+        "start": "node server.js",
+        "server": "nodemon server.js"
     }
-
-    package_json['type'] = "module"
-
-    with open("package.json", "w") as package_file:
-        json.dump(package_json, package_file, indent=2)
-
-    # Create a .gitignore file
+    backend_package_json['type'] = "module"
+    
+    with open("package.json", "w") as backend_package_file:
+        json.dump(backend_package_json, backend_package_file, indent=2)
+    
+    # Create backend files
     with open(".gitignore", "w") as gitignore_file:
         gitignore_file.write("node_modules\n.env\n")
-
-    # Create a .env file
+    
     with open(".env", "w") as env_file:
-        env_file.write(f"""\
+        env_file.write(f"""
 NODE_ENV=development
 BACKEND_PORT=5000
 MONGO_URI=mongodb://localhost:27017/{project_name}
 JWT_SECRET=jwtSecret123
 """)
-
-    # Create backend folder structure
-    os.makedirs("backend/config", exist_ok=True)
-    os.makedirs("backend/controllers", exist_ok=True)
-    os.makedirs("backend/middleware", exist_ok=True)
-    os.makedirs("backend/models", exist_ok=True)
-    os.makedirs("backend/routes", exist_ok=True)
-
-    # Create server.js file
-    server_js_content = """\
+    
+    os.makedirs("config", exist_ok=True)
+    os.makedirs("controllers", exist_ok=True)
+    os.makedirs("middleware", exist_ok=True)
+    os.makedirs("models", exist_ok=True)
+    os.makedirs("routes", exist_ok=True)
+    
+    with open("server.js", "w") as server_file:
+        server_file.write("""
 import express from 'express';
 import cookieParser from 'cookie-parser';
 import { errorHandler } from './middleware/errorMiddleware.js';
@@ -86,26 +97,22 @@ app.use(express.urlencoded({ extended: false }));
 app.use(errorHandler);
 
 app.listen(port, () => console.log(`Server started on port ${port}`));
-"""
-    with open("backend/server.js", "w") as server_file:
-        server_file.write(server_js_content)
-
-    # Create errorMiddleware.js
-    error_middleware_content = """\
+""")
+    
+    with open("middleware/errorMiddleware.js", "w") as middleware_file:
+        middleware_file.write("""
 export const errorHandler = (err, req, res, next) => {
     const statusCode = res.statusCode ? res.statusCode : 500;
     res.status(statusCode);
     res.json({
         message: err.message,
         stack: process.env.NODE_ENV === 'production' ? null : err.stack
-    })
-}
-"""
-    with open("backend/middleware/errorMiddleware.js", "w") as middleware_file:
-        middleware_file.write(error_middleware_content)
-
-    # Create db.js
-    db_config = """\
+    });
+};
+""")
+    
+    with open("config/db.js", "w") as db_file:
+        db_file.write("""
 import mongoose from 'mongoose';
 import colors from 'colors';
 
@@ -119,27 +126,22 @@ export const connectDB = async () => {
         console.log("(Add JWT secret too)".red);
         process.exit(1);
     }
-}
-"""
-    with open("backend/config/db.js", "w") as db_file:
-        db_file.write(db_config)
-
+};
+""")
+    
     print(f"Backend setup complete for project: {project_name}")
+    os.chdir("..")
 
 from mern_frontend_builder import MernFrontendBuilder
 
 if __name__ == "__main__":
     project_name = input("Enter your project name: ")
-
-    # Step 1: Create backend
     create_backend(project_name)
-
-    # Step 2: Create frontend in the same project folder
+    
     frontendBuilder = MernFrontendBuilder()
     frontendBuilder.create_react_app()
-
+    
     print("Starting the development server...")
-    os.chdir('..')
     subprocess.Popen("npm run dev", shell=True)
-
+    
     print(f"Project {project_name} setup complete with backend and frontend!")
