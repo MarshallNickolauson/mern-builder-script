@@ -25,8 +25,9 @@ class MernFrontendBuilder():
 
     # Step 3: Install required packages
     print("Installing dependencies...")
-    run_command("npm install react-icons react-redux @reduxjs/toolkit tailwindcss postcss autoprefixer react-router-dom react-spinners react-toastify axios bootstrap react-bootstrap react-router-bootstrap")
+    run_command("npm install react-icons react-redux @reduxjs/toolkit react-router-dom react-spinners react-toastify axios bootstrap react-bootstrap react-router-bootstrap")
     run_command("npm install --save-dev jest @testing-library/react @testing-library/jest-dom redux-mock-store redux-thunk axios-mock-adapter babel-jest @babel/preset-env @babel/preset-react jest-fetch-mock")
+    run_command("npm install -D tailwindcss@3 postcss autoprefixer")
 
     # Step 4: Initialize Tailwind CSS
     run_command("npx tailwindcss init -p")
